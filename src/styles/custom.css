@@ -1,0 +1,9 @@
+html {
+  background: url("/public/images/bg/bg-light.png") no-repeat center center
+    fixed;
+  background-size: cover;
+}
+
+html[data-theme="dark"] {
+  background-image: url("/public/images/bg/bg-dark.png");
+}

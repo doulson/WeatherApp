@@ -1,0 +1,149 @@
+import { useEffect, useState, FormEvent } from "react";
+//3rd party libraries
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { ScrollParallax } from "react-just-parallax";
+//services & types
+import { WeatherService } from "./services/Weather";
+import { CountryService } from "./services/Country";
+import type { Service } from "./types/service";
+//components
+import WeatherCard from "./components/WeatherCard";
+import ThemeButton from "./components/ThemeButton";
+import SearchHistoryCard from "./components/SearchHistoryCard";
+import AutoCompleteInput from "./components/AutoCompleteInput";
+
+function App() {
+  const [weather, setWeather] = useState<Service.Weather | null>(null);
+  const [country, setCountry] = useState<Service.Country[]>([]);
+  const [weatherHistory, setWeatherHistory] = useState<Service.Weather[]>(
+    () => {
+      const storedHistory = sessionStorage.getItem("weatherHistory");
+      return storedHistory ? JSON.parse(storedHistory) : [];
+    }
+  );
+  const [loading, setLoading] = useState<boolean>(true);
+  const [city, setCity] = useState<string>("");
+
+  useEffect(() => {
+    setLoading(true);
+    CountryService.getCountries().then((data) => {
+      setCountry(data);
+      setLoading(false);
+    });
+    // Fetch based on current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeatherByCoords(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+        },
+        (error) => {
+          console.error("Geolocation is not supported by this browser.", error);
+          setWeather(null);
+          setLoading(false);
+        }
+      );
+    } else {
+      // Geolocation is not supported
+      setWeather(null);
+      setLoading(false);
+    }
+  }, []);
+  // Function to fetch weather by geographic coordinates
+  const fetchWeatherByCoords = (lat: number, lon: number) => {
+    WeatherService.getWeatherByCoords(lat, lon)
+      .then((data: Service.Weather) => {
+        if (data.cod === 200) {
+          setWeather(data);
+        } else {
+          // Handle the situation where weather data is still not retrievable
+          setWeather(null);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch weather by coordinates", error);
+        setWeather(null);
+        setLoading(false);
+      });
+  };
+  // Function to fetch weather by city name
+  const fetchWeatherByName = (city: string) => {
+    if (city == weather?.name) return null;
+    setLoading(true);
+    WeatherService.getWeather(city).then((data: Service.Weather) => {
+      if (data.cod == 200) {
+        const result = { ...data, createdAt: new Date() };
+        setWeather(result);
+        const updatedWeatherHistory = [result, ...weatherHistory];
+        setWeatherHistory(updatedWeatherHistory);
+        sessionStorage.setItem(
+          "weatherHistory",
+          JSON.stringify(updatedWeatherHistory)
+        );
+      } else {
+        setWeather(null);
+      }
+      setLoading(false);
+    });
+  };
+
+  const deleteHistoryItem = (index: number) => {
+    const newHistory = [...weatherHistory];
+    newHistory.splice(index, 1);
+    setWeatherHistory(newHistory);
+    sessionStorage.setItem("weatherHistory", JSON.stringify(newHistory));
+  };
+
+  const handleSearch = (e?: FormEvent<HTMLFormElement>) => {
+    if (e) {
+      e.preventDefault();
+    }
+    if (city) {
+      fetchWeatherByName(city);
+      setCity("");
+    }
+  };
+
+  return (
+    <>
+      <div className="py-3 w-full max-w-screen-md mx-auto px-5 mt-10 pt-10">
+        <ScrollParallax>
+          <div className="text-right py-3">
+            <ThemeButton />
+          </div>
+          <form className="flex justify-center w-full" onSubmit={handleSearch}>
+            <div className="mr-2 w-full">
+              <AutoCompleteInput
+                className="w-90"
+                resources={country}
+                label="Country"
+                onChange={setCity}
+              />
+            </div>
+            <button
+              type="submit"
+              className="btn btn-ghost border-0 rounded-[15px] bg-lightpurple hover:bg-purple-900 dark:bg-purple-950 dark:hover:bg-purple-700 text-white transition ease-in-out duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            >
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </form>
+
+          <div className="card card-body gap-4 rounded-[2rem] shadow-lg bg-white/25 border dark:bg-black/25 border-white dark:border-black/25 mt-40 sm:mt-28">
+            <WeatherCard data={weather} loading={loading} />
+            <SearchHistoryCard
+              data={weatherHistory}
+              onSearch={fetchWeatherByName}
+              onDelete={deleteHistoryItem}
+            />
+          </div>
+        </ScrollParallax>
+      </div>
+    </>
+  );
+}
+
+export default App;
