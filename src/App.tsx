@@ -18,7 +18,7 @@ function App() {
   const [country, setCountry] = useState<Service.Country[]>([]);
   const [weatherHistory, setWeatherHistory] = useState<Service.Weather[]>(
     () => {
-      const storedHistory = sessionStorage.getItem("weatherHistory");
+      const storedHistory = sessionStorage.getItem("weatherHistory"); // store the history in sessionStorage
       return storedHistory ? JSON.parse(storedHistory) : [];
     }
   );
@@ -27,47 +27,54 @@ function App() {
 
   useEffect(() => {
     setLoading(true);
-    CountryService.getCountries().then((data) => {
-      setCountry(data);
-      setLoading(false);
-    });
-    // Fetch based on current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchWeatherByCoords(
-            position.coords.latitude,
-            position.coords.longitude
-          );
-        },
-        (error) => {
-          console.error("Geolocation is not supported by this browser.", error);
-          setWeather(null);
-          setLoading(false);
-        }
-      );
-    } else {
-      // Geolocation is not supported
-      setWeather(null);
-      setLoading(false);
-    }
+    Promise.all([CountryService.getCountries(), getGeolocation()]).then(
+      (data) => {
+        setCountry(data[0]);
+        setWeather(data[1]);
+        setLoading(false);
+      }
+    );
   }, []);
+
+  //Get geo location from device
+  const getGeolocation = (): Promise<Service.Weather | null> => {
+    return new Promise((resolve) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const weatherData = await fetchWeatherByCoords(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            resolve(weatherData);
+          },
+          (error) => {
+            console.error(
+              "Geolocation is not supported by this browser.",
+              error
+            );
+            resolve(null);
+          }
+        );
+      } else {
+        // Geolocation is not supported
+        console.error("Geolocation is not supported by this browser.");
+        resolve(null);
+      }
+    });
+  };
   // Function to fetch weather by geographic coordinates
-  const fetchWeatherByCoords = (lat: number, lon: number) => {
-    WeatherService.getWeatherByCoords(lat, lon)
+  const fetchWeatherByCoords = async (lat: number, lon: number) => {
+    return await WeatherService.getWeatherByCoords(lat, lon)
       .then((data: Service.Weather) => {
         if (data.cod === 200) {
-          setWeather(data);
-        } else {
-          // Handle the situation where weather data is still not retrievable
-          setWeather(null);
+          return data;
         }
-        setLoading(false);
+        return null;
       })
       .catch((error) => {
         console.error("Failed to fetch weather by coordinates", error);
-        setWeather(null);
-        setLoading(false);
+        return null;
       });
   };
   // Function to fetch weather by city name
@@ -91,13 +98,14 @@ function App() {
     });
   };
 
-  const deleteHistoryItem = (index: number) => {
+  const deleteWeatherHistory = (index: number) => {
     const newHistory = [...weatherHistory];
     newHistory.splice(index, 1);
     setWeatherHistory(newHistory);
     sessionStorage.setItem("weatherHistory", JSON.stringify(newHistory));
   };
 
+  //When search is submitted
   const handleSearch = (e?: FormEvent<HTMLFormElement>) => {
     if (e) {
       e.preventDefault();
@@ -122,6 +130,7 @@ function App() {
                 resources={country}
                 label="Country"
                 onChange={setCity}
+                value={city}
               />
             </div>
             <button
@@ -137,7 +146,7 @@ function App() {
             <SearchHistoryCard
               data={weatherHistory}
               onSearch={fetchWeatherByName}
-              onDelete={deleteHistoryItem}
+              onDelete={deleteWeatherHistory}
             />
           </div>
         </ScrollParallax>

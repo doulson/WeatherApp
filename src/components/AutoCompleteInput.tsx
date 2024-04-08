@@ -10,13 +10,16 @@ interface AutoCompleteInputProps {
   valueKey?: string;
   placeholder?: string | undefined;
   label: string;
+  value: string;
   className?: string | undefined;
   onChange: Dispatch<SetStateAction<string>>;
 }
+
 const AutoCompleteInput: React.FC<AutoCompleteInputProps> = ({
   resources,
   valueKey,
   label,
+  value,
   className,
   placeholder,
   onChange,
@@ -26,9 +29,14 @@ const AutoCompleteInput: React.FC<AutoCompleteInputProps> = ({
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number>(0);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  //watch for changesof val;
   useEffect(() => {
     onChange(val);
   }, [val]);
+  //watch for changesof value;
+  useEffect(() => {
+    setVal(value);
+  }, [value]);
   // Update the function to handle suggestions
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
@@ -45,13 +53,13 @@ const AutoCompleteInput: React.FC<AutoCompleteInputProps> = ({
               )
               .slice(0, 7)
           : [];
-      setSuggestions(matchedSuggestions);
+      setSuggestions(matchedSuggestions); // show only 7 suggestions
       return input;
     } else {
       setSuggestions([]);
     }
   };
-
+  // keyboard event when suggestions is shown
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && suggestions.length > 0) {
       e.preventDefault();
@@ -76,13 +84,13 @@ const AutoCompleteInput: React.FC<AutoCompleteInputProps> = ({
         <input
           id="input"
           ref={inputRef}
-          value={val}
+          value={value}
           onChange={handleInputChange}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
-          className={`px-4 py-[0.9rem] text-sm w-full dark:text-white bg-white/25 dark:bg-black/25   rounded-[15px] focus:border-purple-500 focus:outline-none focus:ring focus:ring-purple-300 ${
+          className={`px-4 py-[0.9rem] text-sm w-full dark:text-white bg-white/25 dark:bg-black/25 rounded-[15px] focus:border-purple-500 focus:outline-none focus:ring focus:ring-purple-300 ${
             isFocused || val ? "" : ""
           }`}
         />

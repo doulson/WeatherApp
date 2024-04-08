@@ -5,8 +5,8 @@ const url = `http://api.openweathermap.org/data/2.5/weather?appid=${apiKey}&unit
 export const WeatherService = {
   getWeather(city: string): Promise<Service.Weather> {
     return fetch(`${url}q=${city}`, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      method: "GET",
+      cache: "no-cache",
     })
       .then((res) => {
         return res.json();
@@ -15,8 +15,8 @@ export const WeatherService = {
   },
   getWeatherByCoords(lat: number, lon: number): Promise<Service.Weather> {
     return fetch(`${url}lat=${lat}&lon=${lon}`, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      method: "GET",
+      cache: "no-cache",
     })
       .then((res) => {
         return res.json();

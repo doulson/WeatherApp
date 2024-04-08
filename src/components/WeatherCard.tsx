@@ -3,14 +3,16 @@ import React from "react";
 import { MouseParallax } from "react-just-parallax";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestion } from "@fortawesome/free-solid-svg-icons";
+//types & global functions
 import { Service } from "../types/service";
 import { formatDate } from "../utils/format";
+//components
 import cloudImg from "/images/icon/cloud.png";
 import sunImg from "/images/icon/sun.png";
 
 interface WeatherCardProps {
-  data?: Service.Weather | null; // The weather data is optional
-  loading: boolean; //
+  data?: Service.Weather | null;
+  loading: boolean;
 }
 
 const WeatherCard: React.FC<WeatherCardProps> = ({ data, loading }) => {
@@ -38,7 +40,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ data, loading }) => {
         <div className="absolute top-15 sm:top-[10%] right-[17%] transform translate-x-1/2 -translate-y-1/2 w-[55%] sm:w-2/5">
           <img
             src={
-              data.weather?.length && data.weather[0].id > 799
+              data?.weather?.length && data.weather[0].id > 799
                 ? sunImg
                 : cloudImg
             }

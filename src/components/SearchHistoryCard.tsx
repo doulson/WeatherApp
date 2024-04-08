@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+//3rd party libraries
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faTrash } from "@fortawesome/free-solid-svg-icons";
+//types & global functions
 import { Service } from "../types/service";
 import { formatDate } from "../utils/format";
 
@@ -9,7 +11,6 @@ interface SearchHistoryProps {
   onSearch: (city: string) => void;
   onDelete: (index: number) => void;
 }
-
 const SearchHistoryCard: React.FC<SearchHistoryProps> = ({
   data,
   onSearch,
@@ -27,6 +28,7 @@ const SearchHistoryCard: React.FC<SearchHistoryProps> = ({
       setRemoving(-1);
     }, 300); // This should match the duration of your animation
   };
+
   if (!data || data.length === 0) {
     return (
       <div className="card card-body p-5 px-7 rounded-[2rem] bg-white/25 dark:bg-black/25 shadow overflow-hidden text-sm">
