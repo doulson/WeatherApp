@@ -48,7 +48,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ data, loading }) => {
       </MouseParallax>
       <p className="text-md font-semibold dark:text-white">Today's Weather</p>
       <div className="flex justify-between">
-        <span className="text-8xl font-bold text-darkpurple dark:text-white">
+        <span className="text-8xl font-bold text-lightpurple dark:text-white">
           {data.main.temp.toFixed(0)}°
         </span>
         <div className="block sm:hidden self-end text-gray-500 dark:text-white">
