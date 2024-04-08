@@ -33,6 +33,7 @@ const AutoCompleteInput: React.FC<AutoCompleteInputProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setVal(input);
+    setActiveSuggestionIndex(0);
     if (input.length > 0) {
       const matchedSuggestions =
         resources && resources.length > 0
@@ -52,7 +53,8 @@ const AutoCompleteInput: React.FC<AutoCompleteInputProps> = ({
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && suggestions.length > 0) {
+      e.preventDefault();
       setVal(suggestions[activeSuggestionIndex].name);
       setSuggestions([]);
     } else if (e.key === "ArrowUp") {
