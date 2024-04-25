@@ -1,6 +1,6 @@
 import { Service } from "../types/service";
 const apiKey = "0a814b786a9825a4af3989373e5b08eb";
-const url = `http://api.openweathermap.org/data/2.5/weather?appid=${apiKey}&units=metric&`;
+const url = `https://api.openweathermap.org/data/2.5/weather?appid=${apiKey}&units=metric&`;
 
 export const WeatherService = {
   getWeather(city: string): Promise<Service.Weather> {
