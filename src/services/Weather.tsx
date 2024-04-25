@@ -24,3 +24,15 @@ export const WeatherService = {
       .then((data) => data as Service.Weather);
   },
 };
+
+export const UserService = {
+  getUsers() {
+    return fetch(`${url}/users`, {
+      method: "GET",
+      cache: "no-cache",
+    })
+      .then((res) => res.json())
+      .then((data) => data as Service.Weather)
+      .catch((err) => err);
+  },
+};
